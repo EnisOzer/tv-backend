@@ -16,7 +16,7 @@ services:
       POSTGRES_PASSWORD: admin123
       PGDATA: /data/postgres # no idea what this envvar is doing
     ports:
-      - "5432:5432"
+      - "1234:5432"
     networks:
       - "tv-backend-net"
     restart: unless-stopped
