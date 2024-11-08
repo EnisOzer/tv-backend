@@ -1,0 +1,25 @@
+services:
+  tv-backend:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - "postgres"
+    networks:
+      - "tv-backend-net"
+
+  postgres:
+    container_name: postgres
+    image: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      PGDATA: /data/postgres # no idea what this envvar is doing
+    ports:
+      - "5432:5432"
+    networks:
+      - "tv-backend-net"
+    restart: unless-stopped
+
+networks:
+  tv-backend-net:
