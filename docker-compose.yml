@@ -20,6 +20,8 @@ services:
     networks:
       - "tv-backend-net"
     restart: unless-stopped
+    volumes:
+      - ./src/database/init.sql:/docker-entrypoint-initdb.d/init.sql
 
 networks:
   tv-backend-net:
