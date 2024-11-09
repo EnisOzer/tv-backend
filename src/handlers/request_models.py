@@ -4,7 +4,7 @@ from dataclasses import dataclass
 @dataclass
 class TopicRequest(BaseModel):
     name: str
-    user_id: str
+    description: str
 
 @dataclass
 class CommentRequest(BaseModel):
