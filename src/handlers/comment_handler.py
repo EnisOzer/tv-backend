@@ -86,4 +86,4 @@ def get_pending_comments_handler(topic_id: str, request: Request):
                 for row in commentsList
             ]
             
-    return clusterComments([c.comment for c in comments])
+            return clusterComments(comments)

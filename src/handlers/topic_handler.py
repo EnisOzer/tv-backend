@@ -1,10 +1,11 @@
 import logging
+from src.ai.tv_ai_api import Comment, summariseTopComments
 from src.handlers.helpers import extract_authorization_token_from_headers
 from src.handlers.database_connection import get_db_connection
 from src.handlers.request_models import TopicRequest
 from fastapi import HTTPException
 import datetime
-from typing import Optional, Union
+from typing import List, Union
 
 logger = logging.getLogger(__name__)
 
@@ -139,4 +140,45 @@ def get_topic_comments_handler(topic_id: str):
                 for comment in comments
             ]
             
-    return formatted_comments
+            return formatted_comments
+        
+def get_topic_comments_summary_handler(topic_id: str) -> str:
+    if not topic_id:
+        raise HTTPException(status_code=400, detail="Topic_id should not be empty.")
+    
+    with get_db_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT * FROM topic WHERE id = %s",
+                (topic_id, ))
+            existing_topic = cursor.fetchone()
+
+            if not existing_topic:
+                raise HTTPException(status_code=400, detail="Topic does not exist.")
+            
+            cursor.execute("""
+                SELECT 
+                    c.id,
+                    c.content,
+                    c.topic_id,
+                    c.session_id,
+                    COUNT(CASE WHEN v.vote_type = 'VOTE_UP' THEN 1 END) AS up_votes,
+                    COUNT(CASE WHEN v.vote_type = 'VOTE_DOWN' THEN 1 END) AS down_votes,
+                    COUNT(CASE WHEN v.vote_type = 'SKIPPED' THEN 1 END) AS skipped_votes,
+                    c.created_at
+                FROM comment c LEFT JOIN vote v ON c.id = v.comment_id
+                WHERE c.topic_id = %s AND c.approved = TRUE
+                GROUP BY c.id, c.session_id, c.topic_id
+            """, (topic_id,))
+            
+            rows = cursor.fetchall()
+
+            # If there is no any comment, return empty string as summary
+            if len(rows) == 0:
+                return ""
+
+            comments: List[str] = [
+                Comment(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]) for row in rows
+            ]
+            
+            return summariseTopComments(comments)
