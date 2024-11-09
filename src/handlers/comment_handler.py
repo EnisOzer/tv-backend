@@ -8,6 +8,8 @@ from src.handlers.database_connection import get_db_connection
 from src.handlers.request_models import CommentRequest
 import datetime
 
+from src.handlers.response_models import CommentResponse
+
 logger = logging.getLogger(__name__)
 
 def create_comment_handler(request: CommentRequest):
@@ -46,15 +48,16 @@ def create_comment_handler(request: CommentRequest):
 
             connection.commit()
 
-    return {
-            "id": comment_id,
-            "topic_id": topic_id,
-            "session_id": session_id,
-            "content": content,
-            "approved": False,
-            "rejected": False,
-            "created_at": time_created
-            }
+    return CommentResponse(
+            comment_id = comment_id,
+            content=content,
+            topic_id = topic_id,
+            session_id= session_id,
+            up_votes= 0,
+            down_votes= 0,
+            skipped_times = 0,
+            created_at = time_created,
+        )
 
 def get_pending_comments_handler(topic_id: str, request: Request):
     logger.info("Getting pending comments for topic_id: %s", topic_id)

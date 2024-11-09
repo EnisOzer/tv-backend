@@ -1,5 +1,6 @@
 import logging
 from src.ai.tv_ai_api import Comment, summariseTopComments
+from src.handlers.response_models import CommentResponse, TopicResponse
 from src.handlers.helpers import extract_authorization_token_from_headers
 from src.handlers.database_connection import get_db_connection
 from src.handlers.request_models import TopicRequest
@@ -39,17 +40,17 @@ def create_topic_handler(request: TopicRequest, authorization: Union[str, None])
             
             connection.commit()
 
-    return {
-            "topic_id": topic_id,
-            "title": topic_title,
-            "description": topic_description,
-            "commentCount": 0,
-            "created_at": time_created,
-            "completed": False,
-            }
+    return TopicResponse(
+        topic_id=topic_id,
+        title=topic_title,
+        description=topic_description,
+        comment_count=0,
+        created_at=time_created,
+        completed=False
+    )
 
 
-def get_topic_handler(topic_id: str):
+def get_topic_handler(topic_id: str) -> TopicResponse:
     if not topic_id:
         logger.error("Topic_id should not be empty")
         raise HTTPException(status_code=400, detail="Topic_id should not be empty.")
@@ -60,18 +61,22 @@ def get_topic_handler(topic_id: str):
         with connection.cursor() as cursor:
             cursor.execute("SELECT * FROM topic WHERE id = %s", (topic_id,))
             topic = cursor.fetchone()
-            topic_id, topic_title, topic_description, completed, created_at, comment_count, moderator_email = topic
-    return {
-        "topic_id": topic_id,
-        "title": topic_title,
-        "description": topic_description,
-        "completed": completed,
-        "created_at" : created_at,
-        "comment_count": comment_count,
-        "moderator_email": moderator_email
-    }
 
-def get_all_topic_handler():
+            if not topic:
+                raise HTTPException(status_code=400, detail=f"No topic with topic id {topic_id}.")
+            
+            topic_id, topic_title, topic_description, completed, created_at, comment_count, *rest = topic
+    
+    return TopicResponse(
+        topic_id=topic_id,
+        title=topic_title,
+        comment_count=comment_count,
+        description=topic_description,
+        completed=completed,
+        created_at=created_at
+    )
+
+def get_all_topic_handler() -> List[TopicResponse]:
     logger.info("Getting all topics")
     result = []
     
@@ -81,20 +86,19 @@ def get_all_topic_handler():
             topics = cursor.fetchall()
 
             for topic in topics:
-                topic_id, topic_title, topic_description, completed, created_at, comment_count, moderator_email = topic
-                result.append({
-                    "topic_id": topic_id,
-                    "title": topic_title,
-                    "description": topic_description,
-                    "completed": completed,
-                    "created_at" : created_at,
-                    "comment_count": comment_count,
-                    "moderator_email": moderator_email
-                })
+                topic_id, topic_title, topic_description, completed, created_at, comment_count, *rest = topic
+                result.append(TopicResponse(
+                    topic_id=topic_id,
+                    title=topic_title,
+                    description=topic_description,
+                    completed=completed,
+                    created_at=created_at,
+                    comment_count=comment_count
+                ))
                 
     return result
         
-def get_topic_comments_handler(topic_id: str):
+def get_topic_comments_handler(topic_id: str) -> CommentResponse:
     if not topic_id:
         logger.error("Topic id should not be empty")
         raise HTTPException(status_code=400, detail="Topic_id should not be empty.")
@@ -127,16 +131,16 @@ def get_topic_comments_handler(topic_id: str):
             # Format the response as a list of dictionaries
             comments = cursor.fetchall()
             formatted_comments = [
-                {
-                    "comment_id": comment[0],
-                    "session_id": comment[1],
-                    "topic_id": comment[2],
-                    "content": comment[3],
-                    "created_at": comment[4],
-                    "up_votes": comment[5],
-                    "down_votes": comment[6],
-                    "skipped_times": comment[7]
-                }
+                CommentResponse(
+                    comment_id=comment[0],
+                    session_id=comment[1],
+                    topic_id=comment[2],
+                    content=comment[3],
+                    created_at=comment[4],
+                    up_votes=comment[5],
+                    down_votes=comment[6],
+                    skipped_votes=comment[7]
+                )
                 for comment in comments
             ]
             

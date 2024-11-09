@@ -1,6 +1,9 @@
+from typing import List
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Union
 from fastapi import FastAPI, Header, Request
+from src.ai.tv_ai_api import Comment
+from src.handlers.response_models import ActivityTopicResponse, CommentResponse, TopicResponse
 from src.handlers.comment_handler import create_comment_handler, get_pending_comments_handler
 from src.handlers.request_models import CommentRequest, SessionIdsActivityRequest, SessionIdsTopicsRequest, TopicRequest, VoteRequest
 from src.handlers.session_activity_handler import get_session_ids_activity_handler, get_session_ids_topics_handler, vote_handler
@@ -28,24 +31,24 @@ app.add_middleware(
 )
 
 @app.post("/topic")
-def create_topic(request: TopicRequest, authorization: Union[str, None] = Header(default=None)):
+def create_topic(request: TopicRequest, authorization: Union[str, None] = Header(default=None)) :
     return create_topic_handler(request, authorization)
 
 @app.get("/topic")
-def get_all_topics():
+def get_all_topics() -> List[TopicResponse]:
     return get_all_topic_handler()
 
 @app.post("/comment")
-def create_comment(request: CommentRequest):
+def create_comment(request: CommentRequest) -> CommentResponse:
     return create_comment_handler(request)
 
 @app.get("/topic/{topic_id}")
-def get_topic(topic_id: str):
+def get_topic(topic_id: str) -> TopicResponse:
     return get_topic_handler(topic_id)
 
 # Return comments that are approved by moderator
 @app.get("/topic/{topic_id}/comment")
-def get_topic_comments(topic_id: str):
+def get_topic_comments(topic_id: str) -> List[CommentResponse]:
     return get_topic_comments_handler(topic_id)
 
 @app.get("/topic/{topic_id}/comments_summary")
@@ -63,9 +66,9 @@ def get_session_ids_topics(request: SessionIdsTopicsRequest):
     return get_session_ids_topics_handler(request)
 
 @app.get("/get_session_ids_activity")
-def get_session_ids_activity(request: SessionIdsActivityRequest):
+def get_session_ids_activity(request: SessionIdsActivityRequest) -> ActivityTopicResponse:
     return get_session_ids_activity_handler(request)
 
 @app.put("/vote")
-def vote(request: VoteRequest):
+def vote(request: VoteRequest) -> ActivityTopicResponse:
     return vote_handler(request)
