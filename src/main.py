@@ -4,7 +4,7 @@ from typing import Union
 from fastapi import FastAPI, Header, Request
 from src.ai.tv_ai_api import Comment
 from src.handlers.response_models import ActivityTopicResponse, CommentResponse, TopicResponse
-from src.handlers.comment_handler import create_comment_handler, get_pending_comments_handler
+from src.handlers.comment_handler import approve_comment_handler, create_comment_handler, get_pending_comments_handler, reject_comment_handler
 from src.handlers.request_models import CommentRequest, SessionIdsActivityRequest, SessionIdsTopicsRequest, TopicRequest, VoteRequest
 from src.handlers.session_activity_handler import get_session_ids_activity_handler, get_session_ids_topics_handler, vote_handler
 from src.handlers.topic_handler import create_topic_handler, get_all_topic_handler, get_topic_comments_summary_handler, get_topic_handler, get_topic_comments_handler
@@ -41,6 +41,14 @@ def get_all_topics() -> List[TopicResponse]:
 @app.post("/comment")
 def create_comment(request: CommentRequest) -> CommentResponse:
     return create_comment_handler(request)
+
+@app.post("/comment/{comment_id}/approve")
+def approve_comment(comment_id: str, request: Request):
+    return approve_comment_handler(comment_id, request)
+
+@app.post("/comment/{comment_id}/reject")
+def approve_comment(comment_id: str, request: Request):
+    return reject_comment_handler(comment_id, request)
 
 @app.get("/topic/{topic_id}")
 def get_topic(topic_id: str) -> TopicResponse:
