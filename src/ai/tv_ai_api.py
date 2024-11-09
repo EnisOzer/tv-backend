@@ -95,8 +95,11 @@ def summariseTopComments(comments: list[Comment]):
 
 
 def _optimal_k_silhouette(tfidf_matrix, max_k=10):
+    n_samples = tfidf_matrix.shape[0]
+    max_k = min(max_k, n_samples)
+    
     silhouette_scores = []
-    for k in range(2, max_k + 1):
+    for k in range(2, max_k):
         kmeans = KMeans(n_clusters=k, random_state=0)
         labels = kmeans.fit_predict(tfidf_matrix)
         score = silhouette_score(tfidf_matrix, labels)
@@ -109,11 +112,11 @@ def _optimal_k_silhouette(tfidf_matrix, max_k=10):
 def clusterComments(comments: list[Comment]):
     # Step 1: Convert comments to TF-IDF vectors
     vectorizer = TfidfVectorizer(stop_words='english')  # 'english' stop words to ignore common words
-    tfidf_matrix = vectorizer.fit_transform(comments)
+    # extract the comment portion of each Comment
+    tfidf_matrix = vectorizer.fit_transform([comment.comment for comment in comments])
 
     # Step 2: Define the number of clusters (k) - adjust based on data
-    # k = _optimal_k_silhouette(tfidf_matrix, max_k = len(comments))
-    k = 2
+    k = _optimal_k_silhouette(tfidf_matrix)
 
     # Step 3: Apply K-means clustering
     kmeans = KMeans(n_clusters=k, random_state=0)
@@ -172,7 +175,12 @@ commentObjectList = [
     Comment("887d46cb-1d43-4326-9e05-26a79500e24j", "Basic income support should be replaced by basic income.", "1", "1", 9, 5, 0, "2022-01-09"),
 ]
 
-clusterComments(comments)
+# clusters = clusterComments(commentObjectList)
+# for cluster in clusters:
+#     print("Cluster:")
+#     for comment in cluster:
+#         print(comment.comment)
+# # print()
 
 # newComment = "The employee must also have some rights. There are no slaves."
 # print(getSimilarComments(comments, newComment))
