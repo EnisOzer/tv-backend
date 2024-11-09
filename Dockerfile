@@ -1,13 +1,13 @@
-FROM python:3.12
+FROM image-requirements
 
 WORKDIR /app
 
-COPY . .
+COPY src/ /app/src
 
-RUN pip install -r requirements.txt
-
+CMD ["ECHO 'Listing files'"]
 CMD ["ls"]
 
+CMD ["fastapi", "run", "src/main.py", "--port", "80"]
 
 # # Make port 8080 available to the world outside this container
 # EXPOSE 8080

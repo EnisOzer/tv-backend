@@ -1,7 +1,7 @@
 from fastapi import FastAPI
-from handlers.comment_handler import create_comment_handler
-from handlers.request_models import CommentRequest, TopicRequest
-from handlers.topic_handler import create_topic_handler, get_topic_handler, get_topic_comments_handler
+from src.handlers.comment_handler import create_comment_handler
+from src.handlers.request_models import CommentRequest, TopicRequest
+from src.handlers.topic_handler import create_topic_handler, get_topic_handler, get_topic_comments_handler
 
 app = FastAPI()
 

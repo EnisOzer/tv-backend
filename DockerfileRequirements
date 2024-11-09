@@ -1,0 +1,8 @@
+FROM python:3.12
+
+COPY requirements.txt /app/requirements.txt
+
+CMD ["ECHO 'Listing files'"]
+CMD ["ls"]
+
+RUN pip install -r /app/requirements.txt

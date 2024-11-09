@@ -28,7 +28,7 @@ CREATE TABLE truevoice.topic (
 -- Create Comment table
 CREATE TABLE truevoice.comment (
     comment_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),                 -- Unique identifier for comment
-    topic_id UUID REFERENCES truevoice.topic(topic_id) ON DELETE CASCADE,  -- Foreign key to Topic
+    topic_id UUID REFERENCES truevoice.topic(id) ON DELETE CASCADE,  -- Foreign key to Topic
     user_session_id VARCHAR(15) NOT NULL,                                  -- Session id
     content TEXT NOT NULL,                                                 -- Content of the comment
     approved BOOLEAN DEFAULT 'false',                                      -- Indicates whether comment is approved by moderator
