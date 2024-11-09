@@ -1,4 +1,5 @@
 from http.client import HTTPException
+from handlers.helpers import extract_authorization_token_from_headers
 from src.handlers.database_connection import get_db_connection
 from src.handlers.request_models import TopicRequest
 
@@ -7,7 +8,9 @@ TOPIC_MIN_LEN_NAME = 7
 
 def create_topic_handler(request: TopicRequest):
     topic_name, topic_description = request.name, request.description
-    
+
+    payload = extract_authorization_token_from_headers(request)
+    moderator_email = payload['email']
 
     if not topic_name or (len(topic_name) < TOPIC_MIN_LEN_NAME):
         raise HTTPException(status_code=400, detail= f"Topic name should have minimum {TOPIC_MIN_LEN_NAME} characters.")
