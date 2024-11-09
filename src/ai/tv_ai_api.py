@@ -50,19 +50,21 @@ def checkHatefulComment(comment: str):
     return answer == "yes" 
 
 class Comment:
-    def __init__(self, comment: str, upvotes: int, downvotes: int, date: str):
+    def __init__(self, comment: str, topic_id: str, session_id: str, up_votes: int, down_votes: int, date: str):
         self.comment = comment
-        self.upvotes = upvotes
-        self.downvotes = downvotes
+        self.up_votes = up_votes
+        self.down_votes = down_votes
         self.date = date
+        self.topic_id = topic_id
+        self.session_id = session_id
 
 def getTopComments(comments: list[Comment]): 
     sampleSize = 0.1 * len(comments) if len(comments) > 10 else len(comments)
     # sort comments by the number of upvotes (high upvotes first)
-    upvotesComments = sorted(comments, key=lambda x: x.upvotes, reverse=True)
+    upvotesComments = sorted(comments, key=lambda x: x.up_votes, reverse=True)
     
-    # sort comments by the number of total votes (upvotes + downvotes)
-    votesComments = sorted(comments, key=lambda x: x.upvotes + x.downvotes, reverse=True)
+    # sort comments by the number of total votes (up_votes + down_votes)
+    votesComments = sorted(comments, key=lambda x: x.up_votes + x.down_votes, reverse=True)
     
     # sort comments based on recency
     dateSortedComments = sorted(comments, key=lambda x: x.date, reverse=True)
