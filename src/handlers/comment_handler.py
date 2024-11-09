@@ -1,4 +1,7 @@
-from http.client import HTTPException
+from typing import Any, List
+
+from fastapi import HTTPException, Request
+from src.handlers.helpers import extract_authorization_token_from_headers
 from src.handlers.database_connection import get_db_connection
 from src.handlers.request_models import CommentRequest
 import datetime
@@ -17,7 +20,7 @@ def create_comment_handler(request: CommentRequest):
             existing_topic = cursor.fetchone()
 
             if not existing_topic:
-                raise HTTPException(status_code=400, detail="Topic already exists.")
+                raise HTTPException(status_code=400, detail="Topic does not exist.")
             
             time_created = datetime.datetime.now()
             cursor.execute(
@@ -36,3 +39,34 @@ def create_comment_handler(request: CommentRequest):
             "rejected": False,
             "created_at": time_created
             }
+
+def get_pending_comments_handler(topic_id: str, request: Request):
+    payload = extract_authorization_token_from_headers(request.headers.get('authorization'))
+    email = payload['email']
+
+    with get_db_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT c.id AS comment_id, 0 as up_votes, 0 as down_votes, \
+                    0 as skipped_times, c.content, c.approved, \
+                    c.topic_id, c.created_at \
+                FROM comment c JOIN topic t ON c.topic_id = t.id \
+                WHERE t.moderator_email = %s AND t.id = %s AND c.approved = false",
+                (email, topic_id))
+            commentsList: List[List[Any]] = cursor.fetchall()
+
+            comments = [
+                {
+                    "comment_id": row[0],
+                    "up_votes": row[1],
+                    "down_votes": row[2],
+                    "skipped_times": row[3],
+                    "content": row[4],
+                    "approved": row[5],
+                    "topic_id": row[6],
+                    "created_at": row[7]
+                }
+                for row in commentsList
+            ]
+            
+            return comments

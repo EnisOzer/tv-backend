@@ -10,12 +10,6 @@ CREATE DATABASE truevoice;
 -- Create schema
 CREATE SCHEMA truevoice;
 
--- Create moderator
-CREATE TABLE truevoice.moderator (
-    username VARCHAR(255) PRIMARY KEY,  -- User name, can be any string, mail is not allowed
-    password VARCHAR(255) NOT NULL      -- Password of user
-);
-
 -- Create Topic table
 CREATE TABLE truevoice.topic (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),                    -- Unique identifier for topic
@@ -23,7 +17,8 @@ CREATE TABLE truevoice.topic (
     description TEXT,                                                 -- Description of topic
     completed BOOLEAN DEFAULT 'false',                                -- Indicates whether topic is completed
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),                -- Exact timestamp when topic was created
-    comment_count INT DEFAULT 0                                       -- Number of comments on that topic
+    comment_count INT DEFAULT 0,                                      -- Number of comments on that topic
+    moderator_email VARCHAR(255)
 );
 
 -- Create Comment table

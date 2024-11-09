@@ -1,15 +1,20 @@
-from http.client import HTTPException
+from src.handlers.helpers import extract_authorization_token_from_headers
 from src.handlers.database_connection import get_db_connection
 from src.handlers.request_models import TopicRequest
+from fastapi import HTTPException
 import datetime
+from typing import Optional, Union
 
 TOPIC_MIN_LEN_TITLE = 3
 
-def create_topic_handler(request: TopicRequest):
+def create_topic_handler(request: TopicRequest, authorization: Union[str, None]):
     topic_title, topic_description = request.title, request.description
     
     if not topic_title or (len(topic_title) < TOPIC_MIN_LEN_TITLE):
         raise HTTPException(status_code=400, detail= f"Topic title should have minimum {TOPIC_MIN_LEN_TITLE} characters.")
+
+    payload = extract_authorization_token_from_headers(authorization)
+    moderator_email = payload['email']
 
     with get_db_connection() as connection:
         with connection.cursor() as cursor:
@@ -21,8 +26,8 @@ def create_topic_handler(request: TopicRequest):
             
             time_created = datetime.datetime.now()
             cursor.execute(
-                "INSERT INTO topic (title, description, created_at) VALUES (%s, %s, %s) RETURNING id",
-                (topic_title, topic_description, time_created))
+                "INSERT INTO topic (title, description, created_at, moderator_email) VALUES (%s, %s, %s, %s) RETURNING id",
+                (topic_title, topic_description, time_created, moderator_email))
             topic_id = cursor.fetchone()[0]
             
             connection.commit()
