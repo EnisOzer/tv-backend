@@ -4,7 +4,7 @@ from fastapi import FastAPI, Header, Request
 from src.handlers.comment_handler import create_comment_handler, get_pending_comments_handler
 from src.handlers.request_models import CommentRequest, SessionIdsActivityRequest, SessionIdsTopicsRequest, TopicRequest, VoteRequest
 from src.handlers.session_activity_handler import get_session_ids_activity_handler, get_session_ids_topics_handler, vote_handler
-from src.handlers.topic_handler import create_topic_handler, get_all_topic_handler, get_topic_handler, get_topic_comments_handler
+from src.handlers.topic_handler import create_topic_handler, get_all_topic_handler, get_topic_comments_summary_handler, get_topic_handler, get_topic_comments_handler
 
 app = FastAPI()
 
@@ -46,6 +46,11 @@ def get_topic(topic_id: str):
 @app.get("/topic/{topic_id}/comment")
 def get_topic_comments(topic_id: str):
     return get_topic_comments_handler(topic_id)
+
+@app.get("/topic/{topic_id}/comments_summary")
+def get_topic_comments_summary(topic_id: str):
+    summary: str = get_topic_comments_summary_handler(topic_id)
+    return {"summary": summary}
 
 # Moderator endpoint to get unapproved comments
 @app.get("/topic/{topic_id}/pending_comments")

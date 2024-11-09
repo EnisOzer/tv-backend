@@ -91,7 +91,7 @@ def summariseTopComments(comments: list[Comment]):
     # making a numbered list out of the comments
     comments = _getTopComments(comments)
     comments = "\n".join([f"{i+1}. {comment}" for i, comment in enumerate(comments)])
-    return askAi(f"Summarise the following comments really well and concisly in a setnce, showing if there are different schools of thoughts (or different patterns): {comments}")
+    return askAi(f"Summarise the following comments really well and concisly in a sentence, showing if there are different schools of thoughts (or different patterns): {comments}")
 
 
 def _optimal_k_silhouette(tfidf_matrix, max_k=10):
