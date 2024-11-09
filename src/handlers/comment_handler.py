@@ -64,6 +64,9 @@ def get_pending_comments_handler(topic_id: str, request: Request):
     payload = extract_authorization_token_from_headers(request.headers.get('authorization'))
     email = payload['email']
 
+    if not email:
+        raise HTTPException(status_code=401, detail="JWT token is missing moderator's email")
+
     with get_db_connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute(
@@ -71,7 +74,10 @@ def get_pending_comments_handler(topic_id: str, request: Request):
                     0 as skipped_times, c.content, c.approved, \
                     c.topic_id, c.created_at, c.session_id \
                 FROM comment c JOIN topic t ON c.topic_id = t.id \
-                WHERE t.moderator_email = %s AND t.id = %s AND c.approved = false",
+                WHERE t.moderator_email = %s \
+                    AND t.id = %s \
+                    AND c.approved = FALSE \
+                    AND c.rejected = FALSE",
                 (email, topic_id))
             commentsList: List[List[Any]] = cursor.fetchall()
 
@@ -90,3 +96,46 @@ def get_pending_comments_handler(topic_id: str, request: Request):
             ]
             
             return clusterComments(comments)
+
+def approve_comment_handler(comment_id: str, request: Request):
+    return change_approved_status_of_comment(comment_id, approved = True, request = request)
+
+def reject_comment_handler(comment_id: str, request: Request):
+    return change_approved_status_of_comment(comment_id, approved = False, request = request)
+
+def change_approved_status_of_comment(comment_id: str, approved: bool, request: Request):
+    # Check whether moderator sent bearer token
+    payload = extract_authorization_token_from_headers(request.headers.get("Authorization"))
+    moderator_email: str = payload['email']
+
+    if not moderator_email:
+        raise HTTPException(status_code=401, detail="JWT token is missing moderator's email")
+    
+    with get_db_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT c.approved, c.rejected \
+                FROM comment c JOIN topic t ON c.topic_id = t.id \
+                WHERE t.moderator_email = %s AND c.id = %s",
+                (moderator_email, comment_id))
+            
+            row = cursor.fetchone()
+
+            if not row:
+                raise HTTPException(status_code=400, detail="Comment with given id is not found")
+            
+            c_approved, c_rejected = row
+
+            if c_approved:
+                raise HTTPException(status_code=400, detail="Comment is already approved")
+            
+            if c_rejected:
+                raise HTTPException(status_code=400, detail="Comment is already rejected")
+
+            cursor.execute(
+                "UPDATE comment SET approved = %s, rejected = %s WHERE id = %s",
+                (approved, not approved, comment_id)
+            )
+            
+            connection.commit()
+            return {}
