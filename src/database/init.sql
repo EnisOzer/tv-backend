@@ -10,19 +10,28 @@ CREATE DATABASE truevoice;
 -- Create schema
 CREATE SCHEMA truevoice;
 
+-- Create moderator
+CREATE TABLE truevoice.moderator (
+    username VARCHAR(255) PRIMARY KEY,  -- User name, can be any string, mail is not allowed
+    password VARCHAR(255) NOT NULL      -- Password of user
+);
+
 -- Create Topic table
 CREATE TABLE truevoice.topic (
     topic_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- Unique identifier for topic
     topic_name VARCHAR(255) NOT NULL,                     -- Topic name with a max length of 255 characters
-    created_at TIMESTAMP WITH TIME ZONE                   -- Exact timestamp when topic was created
+    created_at TIMESTAMP WITH TIME ZONE,                  -- Exact timestamp when topic was created
+    moderator_username VARCHAR(255) REFERENCES truevoice.moderator(username) -- Moderator username who created this topic
 );
 
 -- Create Comment table
 CREATE TABLE truevoice.comment (
-    comment_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- Unique identifier for comment
+    comment_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),                 -- Unique identifier for comment
     topic_id UUID REFERENCES truevoice.topic(topic_id) ON DELETE CASCADE,  -- Foreign key to Topic
-    content TEXT NOT NULL,                                   -- Content of the comment
-    creator_id UUID NOT NULL,                                -- Identifier for the comment's creator
+    user_session_id VARCHAR(15) NOT NULL,                                  -- Session id
+    content TEXT NOT NULL,                                                 -- Content of the comment
+    approved BOOLEAN DEFAULT 'false',                                      -- Indicates whether comment is approved by moderator
+    rejected BOOLEAN DEFAULT 'false',                                      -- Indicates whether comment is rejected by moderator
     created_at TIMESTAMP WITH TIME ZONE                      -- Exact timestamp when comment is posted
 );
 
