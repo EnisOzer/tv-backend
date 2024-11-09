@@ -1,3 +1,4 @@
+import logging
 from src.ai.tv_ai_api import Comment, summariseTopComments
 from src.handlers.helpers import extract_authorization_token_from_headers
 from src.handlers.database_connection import get_db_connection
@@ -6,12 +7,16 @@ from fastapi import HTTPException
 import datetime
 from typing import List, Union
 
+logger = logging.getLogger(__name__)
+
 TOPIC_MIN_LEN_TITLE = 3
 
 def create_topic_handler(request: TopicRequest, authorization: Union[str, None]):
     topic_title, topic_description = request.title, request.description
-    
+    logger.info("Creating topic %s with description %s", topic_title, topic_description)
+
     if not topic_title or (len(topic_title) < TOPIC_MIN_LEN_TITLE):
+        logger.error("Topic title too short %s", topic_title)
         raise HTTPException(status_code=400, detail= f"Topic title should have minimum {TOPIC_MIN_LEN_TITLE} characters.")
 
     payload = extract_authorization_token_from_headers(authorization)
@@ -23,6 +28,7 @@ def create_topic_handler(request: TopicRequest, authorization: Union[str, None])
             existing_topic = cursor.fetchone()
 
             if existing_topic:
+                logger.error("Topic %s already exists", topic_title)
                 raise HTTPException(status_code=400, detail="Topic already exists.")
             
             time_created = datetime.datetime.now()
@@ -45,51 +51,55 @@ def create_topic_handler(request: TopicRequest, authorization: Union[str, None])
 
 def get_topic_handler(topic_id: str):
     if not topic_id:
+        logger.error("Topic_id should not be empty")
         raise HTTPException(status_code=400, detail="Topic_id should not be empty.")
     
+    logger.info("Getting topic %s", topic_id)
+
     with get_db_connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute("SELECT * FROM topic WHERE id = %s", (topic_id,))
             topic = cursor.fetchone()
-            topic_id, topic_title, topic_description, comment_count, created_at, completed, moderator_email = topic
-            return {
-                "topic_id": topic_id,
-                "title": topic_title,
-                "description": topic_description,
-                "comment_count": comment_count,
-                "created_at" : created_at,
-                "completed": completed,
-                "moderator_email": moderator_email
-            }
+            topic_id, topic_title, topic_description, completed, created_at, comment_count, moderator_email = topic
+    return {
+        "topic_id": topic_id,
+        "title": topic_title,
+        "description": topic_description,
+        "completed": completed,
+        "created_at" : created_at,
+        "comment_count": comment_count,
+        "moderator_email": moderator_email
+    }
 
 def get_all_topic_handler():
+    logger.info("Getting all topics")
+    result = []
+    
     with get_db_connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute("SELECT * FROM topic")
             topics = cursor.fetchall()
 
-            if not topics:
-                raise HTTPException(status_code=404, detail="No topics found")
-
-            result = []
             for topic in topics:
-                topic_id, topic_title, topic_description, comment_count, created_at, completed, moderator_email = topic
+                topic_id, topic_title, topic_description, completed, created_at, comment_count, moderator_email = topic
                 result.append({
                     "topic_id": topic_id,
                     "title": topic_title,
                     "description": topic_description,
-                    "comment_count": comment_count,
-                    "created_at": created_at,
                     "completed": completed,
+                    "created_at" : created_at,
+                    "comment_count": comment_count,
                     "moderator_email": moderator_email
                 })
                 
-            return result
+    return result
         
 def get_topic_comments_handler(topic_id: str):
     if not topic_id:
+        logger.error("Topic id should not be empty")
         raise HTTPException(status_code=400, detail="Topic_id should not be empty.")
     
+    logger.info("Getting comments for topic %s", topic_id)
     with get_db_connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute("SELECT * FROM topic WHERE id = %s", (topic_id,))
@@ -172,5 +182,3 @@ def get_topic_comments_summary_handler(topic_id: str) -> str:
             ]
             
             return summariseTopComments(comments)
-    
-

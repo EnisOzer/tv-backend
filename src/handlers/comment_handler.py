@@ -1,3 +1,4 @@
+import logging
 from typing import Any, List
 
 from fastapi import HTTPException, Request
@@ -7,23 +8,29 @@ from src.handlers.database_connection import get_db_connection
 from src.handlers.request_models import CommentRequest
 import datetime
 
+logger = logging.getLogger(__name__)
+
 def create_comment_handler(request: CommentRequest):
     topic_id = request.topic_id
     session_id  = request.session_id 
     content = request.content
 
     if not topic_id or not session_id  or not content:
+        logger.error("All fields must be provided for create comment method.",)
         raise HTTPException(status_code=400, detail=f"All fields must be provided.")
     
     if checkHatefulComment(content):
         raise HTTPException(status_code=400, detail=f"Comment can't be posted because it expresses hateful speach")
 
+    logger.info("Creating comment(topic_id, session_id,content): %s %s %s",
+                topic_id, session_id, content)
     with get_db_connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute("SELECT * FROM topic WHERE id = %s", (topic_id,))
             existing_topic = cursor.fetchone()
 
             if not existing_topic:
+                logger.error("Topic %s does not exist",topic_id)
                 raise HTTPException(status_code=400, detail="Topic does not exist.")
             
             time_created = datetime.datetime.now()
@@ -32,6 +39,11 @@ def create_comment_handler(request: CommentRequest):
                 (topic_id, session_id , content, time_created))
             comment_id = cursor.fetchone()[0]
             
+            cursor.execute(
+                "UPDATE topic SET comment_count = comment_count + 1 WHERE id = %s",
+                (topic_id,)
+            )
+
             connection.commit()
 
     return {
@@ -45,6 +57,7 @@ def create_comment_handler(request: CommentRequest):
             }
 
 def get_pending_comments_handler(topic_id: str, request: Request):
+    logger.info("Getting pending comments for topic_id: %s", topic_id)
     payload = extract_authorization_token_from_headers(request.headers.get('authorization'))
     email = payload['email']
 
