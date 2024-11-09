@@ -2,10 +2,7 @@ from fastapi import Request, HTTPException
 import base64
 import json
 
-def extract_authorization_token_from_headers(request: Request):
-    # Extract the 'Authorization' header from the request
-    authorization: str = request.headers.get('Authorization')
-
+def extract_authorization_token_from_headers(authorization: str):
     if not authorization:
         raise HTTPException(status_code=401, detail="Authorization header is missing")
 
