@@ -7,7 +7,7 @@ from src.handlers.response_models import ActivityTopicResponse, CommentResponse,
 from src.handlers.comment_handler import approve_comment_handler, create_comment_handler, get_pending_comments_handler, reject_comment_handler
 from src.handlers.request_models import CommentRequest, SessionIdsActivityRequest, SessionIdsTopicsRequest, TopicRequest, VoteRequest
 from src.handlers.session_activity_handler import get_session_ids_activity_handler, get_session_ids_topics_handler, vote_handler
-from src.handlers.topic_handler import create_topic_handler, get_all_topic_handler, get_topic_comments_summary_handler, get_topic_handler, get_topic_comments_handler
+from src.handlers.topic_handler import create_topic_handler, edit_topic_handler, get_all_topic_handler, get_topic_comments_summary_handler, get_topic_handler, get_topic_comments_handler
 
 app = FastAPI()
 
@@ -31,8 +31,12 @@ app.add_middleware(
 )
 
 @app.post("/topic")
-def create_topic(request: TopicRequest, authorization: Union[str, None] = Header(default=None)) :
+def create_topic(request: TopicRequest, authorization: Union[str, None] = Header(default=None)) -> TopicResponse:
     return create_topic_handler(request, authorization)
+
+@app.put("/topic/{topic_id}")
+def create_topic(topic_id: str, request: TopicRequest, authorization: Union[str, None] = Header(default=None)) -> TopicResponse:
+    return edit_topic_handler(topic_id, request, authorization)
 
 @app.get("/topic")
 def get_all_topics() -> List[TopicResponse]:
