@@ -124,7 +124,7 @@ def get_topic_comments_handler(topic_id: str) -> CommentResponse:
                     COUNT(CASE WHEN v.vote_type = 'SKIPPED' THEN 1 END) AS skipped_votes
                 FROM comment c
                 LEFT JOIN vote v ON c.id = v.comment_id
-                WHERE c.topic_id = %s AND c.approved = FALSE
+                WHERE c.topic_id = %s AND c.approved = TRUE
                 GROUP BY c.id, c.session_id, c.topic_id
             """, (topic_id,))
             
