@@ -59,14 +59,14 @@ def get_topic_handler(topic_id: str):
         with connection.cursor() as cursor:
             cursor.execute("SELECT * FROM topic WHERE id = %s", (topic_id,))
             topic = cursor.fetchone()
-            topic_id, topic_title, topic_description, comment_count, created_at, completed, moderator_email = topic
+            topic_id, topic_title, topic_description, completed, created_at, comment_count, moderator_email = topic
     return {
         "topic_id": topic_id,
         "title": topic_title,
         "description": topic_description,
-        "comment_count": comment_count,
-        "created_at" : created_at,
         "completed": completed,
+        "created_at" : created_at,
+        "comment_count": comment_count,
         "moderator_email": moderator_email
     }
 
@@ -80,14 +80,14 @@ def get_all_topic_handler():
             topics = cursor.fetchall()
 
             for topic in topics:
-                topic_id, topic_title, topic_description, comment_count, created_at, completed, moderator_email = topic
+                topic_id, topic_title, topic_description, completed, created_at, comment_count, moderator_email = topic
                 result.append({
                     "topic_id": topic_id,
                     "title": topic_title,
                     "description": topic_description,
-                    "comment_count": comment_count,
-                    "created_at": created_at,
                     "completed": completed,
+                    "created_at" : created_at,
+                    "comment_count": comment_count,
                     "moderator_email": moderator_email
                 })
                 
