@@ -45,6 +45,10 @@ def getSimilarComments(comments: list[str], newComment: str, threshold = .5):
     
     return answer
 
+def checkHatefulComment(comment: str):
+    answer = askAi(f"Is the following comment hateful? Only answer with 'yes' or 'no'. {comment}'").lower()
+    return answer == "yes" 
+
 comments = [
     "Electricity network back to 100 state ownership. Even if by force.",
     "Many statements are difficult, if not impossible, to answer with only yes or no, because reality is complicated.",
