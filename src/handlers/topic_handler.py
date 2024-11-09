@@ -69,13 +69,17 @@ def get_topic_comments_handler(topic_id: str):
             
             cursor.execute("""
                 SELECT 
+                    c.id,
                     c.session_id,
                     c.topic_id,
-                    COUNT(CASE WHEN v.voted_up = TRUE THEN 1 END) AS up_votes,
-                    COUNT(CASE WHEN v.voted_up = FALSE THEN 1 END) AS down_votes
+                    c.content,
+                    c.created_at,
+                    COUNT(CASE WHEN v.vote_type = 'VOTE_UP' THEN 1 END) AS up_votes,
+                    COUNT(CASE WHEN v.vote_type = 'VOTE_DOWN' THEN 1 END) AS down_votes,
+                    COUNT(CASE WHEN v.vote_type = 'SKIPPED' THEN 1 END) AS skipped_votes
                 FROM comment c
                 LEFT JOIN vote v ON c.id = v.comment_id
-                WHERE c.topic_id = %s
+                WHERE c.topic_id = %s AND c.approved = FALSE
                 GROUP BY c.id, c.session_id, c.topic_id
             """, (topic_id,))
             
@@ -83,10 +87,14 @@ def get_topic_comments_handler(topic_id: str):
             comments = cursor.fetchall()
             formatted_comments = [
                 {
-                    "session_id": comment[0],
-                    "down_votes": comment[3],
-                    "up_votes": comment[2],
-                    "topic_id": comment[1]
+                    "comment_id": comment[0],
+                    "session_id": comment[1],
+                    "topic_id": comment[2],
+                    "content": comment[3],
+                    "created_at": comment[4],
+                    "up_votes": comment[5],
+                    "down_votes": comment[6],
+                    "skipped_times": comment[7]
                 }
                 for comment in comments
             ]

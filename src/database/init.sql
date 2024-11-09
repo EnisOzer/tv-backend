@@ -37,11 +37,14 @@ CREATE TABLE truevoice.comment (
     created_at TIMESTAMP WITH TIME ZONE                                    -- Exact timestamp when comment is posted
 );
 
+-- Create an enumerated type for vote_type
+CREATE TYPE vote_type_enum AS ENUM ('VOTE_UP', 'VOTE_DOWN', 'SKIPPED');
+
 -- Create Vote table
 CREATE TABLE truevoice.vote (
     comment_id UUID REFERENCES truevoice.comment(id) ON DELETE CASCADE,  -- Foreign key to Comment
     voter_id UUID NOT NULL,                                              -- Identifier for the user voting on the comment
-    voted_up BOOLEAN NOT NULL,                                           -- Boolean to represent upvote/downvote (TRUE/FALSE)
+    vote_type vote_type_enum NOT NULL,                                   -- Boolean to represent upvote/downvote (TRUE/FALSE)
 
     PRIMARY KEY (comment_id, voter_id)                                   -- Composite primary key to ensure each user votes only once per comment
 );
