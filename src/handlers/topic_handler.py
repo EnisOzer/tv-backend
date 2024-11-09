@@ -49,6 +49,51 @@ def create_topic_handler(request: TopicRequest, authorization: Union[str, None])
         completed=False
     )
 
+def edit_topic_handler(topic_id: str, request: TopicRequest, authorization: Union[str, None]) -> TopicResponse:
+    new_title, new_description = request.title, request.description
+    logger.info("Editing topic %s with new title '%s' and new description '%s'", topic_id, new_title, new_description)
+
+    if not new_title or len(new_title) < TOPIC_MIN_LEN_TITLE:
+        logger.error("Topic title too short: '%s'", new_title)
+        raise HTTPException(status_code=400, detail=f"Topic title should have a minimum of {TOPIC_MIN_LEN_TITLE} characters.")
+
+    # Extract moderator's email from authorization token
+    payload = extract_authorization_token_from_headers(authorization)
+    moderator_email = payload['email']
+
+    with get_db_connection() as connection:
+        with connection.cursor() as cursor:
+            # Check if the topic exists
+            cursor.execute("SELECT * FROM topic WHERE id = %s", (topic_id,))
+            existing_topic = cursor.fetchone()
+
+            if not existing_topic:
+                logger.error("No topic found with id %s", topic_id)
+                raise HTTPException(status_code=404, detail="Topic not found.")
+            
+            # Update the existing topic
+            cursor.execute(
+                """
+                UPDATE topic
+                SET title = %s, description = %s, moderator_email = %s
+                WHERE id = %s
+                RETURNING id, title, description, completed, created_at, comment_count, moderator_email
+                """,
+                (new_title, new_description, moderator_email, topic_id)
+            )
+
+            updated_topic = cursor.fetchone()
+            connection.commit()
+
+    return TopicResponse(
+        topic_id=updated_topic[0],
+        title=updated_topic[1],
+        description=updated_topic[2],
+        completed=updated_topic[3],
+        created_at=updated_topic[4],
+        comment_count=updated_topic[5],
+        moderator_email=updated_topic[6]
+    )
 
 def get_topic_handler(topic_id: str) -> TopicResponse:
     if not topic_id:
