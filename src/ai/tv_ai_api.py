@@ -50,6 +50,7 @@ def getSimilarComments(comments: list[str], newComment: str, threshold = .15):
 
 def checkHatefulComment(comment: str):
     answer = askAi(f"Is the following comment hateful? Only answer with 'yes' or 'no'. {comment}'").lower()
+    assert(answer in ["yes", "no"])
     return answer == "yes" 
 
 class Comment:

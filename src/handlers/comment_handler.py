@@ -1,6 +1,7 @@
 from typing import Any, List
 
 from fastapi import HTTPException, Request
+from src.ai.tv_ai_api import checkHatefulComment 
 from src.handlers.helpers import extract_authorization_token_from_headers
 from src.handlers.database_connection import get_db_connection
 from src.handlers.request_models import CommentRequest
@@ -13,6 +14,9 @@ def create_comment_handler(request: CommentRequest):
 
     if not topic_id or not session_id  or not content:
         raise HTTPException(status_code=400, detail=f"All fields must be provided.")
+    
+    if checkHatefulComment(content):
+        raise HTTPException(status_code=400, detail=f"Comment can't be posted because it expresses hateful speach")
 
     with get_db_connection() as connection:
         with connection.cursor() as cursor:
