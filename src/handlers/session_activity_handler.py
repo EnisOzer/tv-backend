@@ -1,14 +1,18 @@
+import logging
 from fastapi import HTTPException
 from src.handlers.database_connection import get_db_connection
 from src.handlers.request_models import ActivityTopicResponse, SessionIdsActivityRequest, SessionIdsTopicsRequest, VoteRequest
 
+logger = logging.getLogger(__name__)
 
 def get_session_ids_topics_handler(request: SessionIdsTopicsRequest):
     session_id = request.session_id
 
     if not session_id:
+        logger.error("Session id is required")
         raise HTTPException(status_code=400, detail="Session id isn't provided.")
-
+    
+    logger.info("Getting topics that session id %s participated.", session_id)
     with get_db_connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute(
@@ -28,8 +32,10 @@ def get_session_ids_activity_handler(request: SessionIdsActivityRequest):
     session_id, topic_id = request.session_id, request.topic_id
 
     if not session_id or not topic_id:
+        logger.error("Session id and topic_id needed.")
         raise HTTPException(status_code=400, detail="Session id and topic_id needed.")
-
+    
+    logger.info("Getting activity info for session id %s for topic %s.", session_id, topic_id)
     with get_db_connection() as connection:
         with connection.cursor() as cursor:
             # Fetch all comment IDs for the given topic
@@ -66,7 +72,7 @@ def get_session_ids_activity_handler(request: SessionIdsActivityRequest):
 
 def vote_handler(request: VoteRequest):
     comment_id, session_id, vote_type = request.comment_id, request.session_id, request.vote_type
-
+    logger.info("Session id %s is voting for commentId %s with vote type %s.", session_id, comment_id, vote_type)
     with get_db_connection() as connection:
         with connection.cursor() as cursor:
             # Check if the comment exists
@@ -76,6 +82,7 @@ def vote_handler(request: VoteRequest):
             )
             comment = cursor.fetchone()
             if not comment:
+                logger.error("Comment with id %s is not found", comment_id)
                 raise HTTPException(status_code=404, detail="Comment not found.")
 
             # Check if the user already voted on this comment
