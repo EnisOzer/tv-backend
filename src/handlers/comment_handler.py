@@ -39,6 +39,11 @@ def create_comment_handler(request: CommentRequest):
                 (topic_id, session_id , content, time_created))
             comment_id = cursor.fetchone()[0]
             
+            cursor.execute(
+                "UPDATE topic SET comment_count = comment_count + 1 WHERE id = %s",
+                (topic_id,)
+            )
+
             connection.commit()
 
     return {
