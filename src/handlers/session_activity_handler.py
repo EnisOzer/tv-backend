@@ -2,7 +2,6 @@ from fastapi import HTTPException
 from src.handlers.database_connection import get_db_connection
 from src.handlers.request_models import ActivityTopicResponse, SessionIdsActivityRequest, SessionIdsTopicsRequest, VoteRequest
 
-VOTE_TYPE = {'VOTE_UP', 'VOTE_DOWN', 'SKIPPED'}
 
 def get_session_ids_topics_handler(request: SessionIdsTopicsRequest):
     session_id = request.session_id
@@ -67,9 +66,6 @@ def get_session_ids_activity_handler(request: SessionIdsActivityRequest):
 
 def vote_handler(request: VoteRequest):
     comment_id, session_id, vote_type = request.comment_id, request.session_id, request.vote_type
-
-    if vote_type not in VOTE_TYPE:
-        raise HTTPException(status_code=400, detail="Invalid vote type.")
 
     with get_db_connection() as connection:
         with connection.cursor() as cursor:
