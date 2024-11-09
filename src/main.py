@@ -10,15 +10,16 @@ def create_topic(request: TopicRequest):
     return create_topic_handler(request)
 
 @app.post("/comment")
-def read_root(request: CommentRequest):
+def create_comment(request: CommentRequest):
     return create_comment_handler(request)
 
 @app.get("/topic/{topic_id}")
-def read_root(topic_id: str):
+def get_topic(topic_id: str):
     return get_topic_handler(topic_id)
 
-@app.get("/topic/{topic_id}/comments")
-def read_root(topic_id: str):
+# Return comments that are approved by moderator
+@app.get("/topic/{topic_id}/comment")
+def get_topic_comments(topic_id: str):
     return get_topic_comments_handler(topic_id)
 
 # Moderator endpoint to get unapproved comments
