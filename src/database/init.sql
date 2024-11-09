@@ -25,7 +25,8 @@ CREATE TABLE truevoice.user (
 -- Create Topic table
 CREATE TABLE truevoice.topic (
     topic_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- Unique identifier for topic
-    topic_name VARCHAR(255) NOT NULL                      -- Topic name with a max length of 255 characters
+    topic_name VARCHAR(255) NOT NULL,                     -- Topic name with a max length of 255 characters
+    created_at TIMESTAMP WITH TIME ZONE                   -- Exact timestamp when topic was created
 );
 
 -- Create Comment table
@@ -35,7 +36,8 @@ CREATE TABLE truevoice.comment (
     user_id VARCHAR(255) REFERENCES truevoice.user(username) ON DELETE SET NULL,  -- Foreign key to Topic
     content TEXT NOT NULL,                                                 -- Content of the comment
     approved BOOLEAN DEFAULT 'false',                                      -- Indicates whether comment is approved by moderator
-    rejected BOOLEAN DEFAULT 'false'                                       -- Indicates whether comment is rejected by moderator
+    rejected BOOLEAN DEFAULT 'false',                                      -- Indicates whether comment is rejected by moderator
+    created_at TIMESTAMP WITH TIME ZONE                      -- Exact timestamp when comment is posted
 );
 
 -- Create Vote table
