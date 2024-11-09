@@ -1,7 +1,7 @@
 from typing import Any, List
 
 from fastapi import HTTPException, Request
-from src.ai.tv_ai_api import checkHatefulComment 
+from src.ai.tv_ai_api import Comment, checkHatefulComment, clusterComments
 from src.handlers.helpers import extract_authorization_token_from_headers
 from src.handlers.database_connection import get_db_connection
 from src.handlers.request_models import CommentRequest
@@ -53,24 +53,24 @@ def get_pending_comments_handler(topic_id: str, request: Request):
             cursor.execute(
                 "SELECT c.id AS comment_id, 0 as up_votes, 0 as down_votes, \
                     0 as skipped_times, c.content, c.approved, \
-                    c.topic_id, c.created_at \
+                    c.topic_id, c.created_at, c.session_id \
                 FROM comment c JOIN topic t ON c.topic_id = t.id \
                 WHERE t.moderator_email = %s AND t.id = %s AND c.approved = false",
                 (email, topic_id))
             commentsList: List[List[Any]] = cursor.fetchall()
 
             comments = [
-                {
-                    "comment_id": row[0],
-                    "up_votes": row[1],
-                    "down_votes": row[2],
-                    "skipped_times": row[3],
-                    "content": row[4],
-                    "approved": row[5],
-                    "topic_id": row[6],
-                    "created_at": row[7]
-                }
+                Comment(
+                    comment_id = row[0],
+                    comment=row[4],
+                    topic_id = row[6],
+                    session_id= row[8],
+                    up_votes= row[1],
+                    down_votes= row[2],
+                    skipped_times = row[3],
+                    timestamp = row[7],
+                )
                 for row in commentsList
             ]
             
-            return comments
+            return clusterComments([c.comment for c in comments])

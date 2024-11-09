@@ -54,11 +54,12 @@ def checkHatefulComment(comment: str):
     return answer == "yes" 
 
 class Comment:
-    def __init__(self, comment: str, topic_id: str, session_id: str, up_votes: int, down_votes: int, date: str):
+    def __init__(self, comment_id: str, comment: str, topic_id: str, session_id: str, up_votes: int, down_votes: int, skipped_times: int, timestamp: str):
+        self.comment_id = comment_id
         self.comment = comment
         self.up_votes = up_votes
         self.down_votes = down_votes
-        self.date = date
+        self.timestamp = timestamp
         self.topic_id = topic_id
         self.session_id = session_id
 
@@ -71,7 +72,7 @@ def _getTopComments(comments: list[Comment]):
     votesComments = sorted(comments, key=lambda x: x.up_votes + x.down_votes, reverse=True)
     
     # sort comments based on recency
-    dateSortedComments = sorted(comments, key=lambda x: x.date, reverse=True)
+    dateSortedComments = sorted(comments, key=lambda x: x.timestamp, reverse=True)
     
     # while the answer size is less than the sample size, keep adding comments (by taking the next top comment from each list)
     comments = []
@@ -112,7 +113,8 @@ def clusterComments(comments: list[Comment]):
     tfidf_matrix = vectorizer.fit_transform(comments)
 
     # Step 2: Define the number of clusters (k) - adjust based on data
-    k = _optimal_k_silhouette(tfidf_matrix)
+    # k = _optimal_k_silhouette(tfidf_matrix, max_k = len(comments))
+    k = 2
 
     # Step 3: Apply K-means clustering
     kmeans = KMeans(n_clusters=k, random_state=0)
@@ -125,6 +127,8 @@ def clusterComments(comments: list[Comment]):
         if label not in clusters:
             clusters[label] = []
         clusters[label].append(comment)
+
+    clusters = [cluster for cluster in clusters.values()]
 
     return clusters
 
@@ -158,15 +162,15 @@ comments = [
 
 
 commentObjectList = [
-    Comment("Electricity network back to 100 state ownership. Even if by force.", "1", "1", 10, 2, "2022-01-01"),
-    Comment("Many statements are difficult, if not impossible, to answer with only yes or no, because reality is complicated.", "1", "1", 5, 1, "2022-01-02"),
-    Comment("Family poverty with children is svetism and means a low number of families with children. It is different from the poverty of families with children.", "1", "1", 7, 3, "2022-01-03"),
-    Comment("One of society's most important tasks is to ensure that companies compete with each other.", "1", "1", 8, 4, "2022-01-04"),
-    Comment("Language quotas are institutional nepotism.", "1", "1", 9, 5, "2022-01-05"),
-    Comment("These things should not be compared with each other", "1", "1", 6, 2, "2022-01-06"),
-    Comment("Schools should have teaching peace, i.e. less extra work for teachers.", "1", "1", 7, 3, "2022-01-07"),
-    Comment("The educational material of schools should be implemented on the principle of open source code.", "1", "1", 8, 4, "2022-01-08"),
-    Comment("Basic income support should be replaced by basic income.", "1", "1", 9, 5, "2022-01-09"),
+    Comment("887d46cb-1d43-4326-9e05-26a79500e24a", "Electricity network back to 100 state ownership. Even if by force.", "1", "1", 10, 2, 0, "2022-01-01"),
+    Comment("887d46cb-1d43-4326-9e05-26a79500e24b", "Many statements are difficult, if not impossible, to answer with only yes or no, because reality is complicated.", "1", "1", 5, 1, 0, "2022-01-02"),
+    Comment("887d46cb-1d43-4326-9e05-26a79500e24c", "Family poverty with children is svetism and means a low number of families with children. It is different from the poverty of families with children.", "1", "1", 7, 3, 0, "2022-01-03"),
+    Comment("887d46cb-1d43-4326-9e05-26a79500e24d", "One of society's most important tasks is to ensure that companies compete with each other.", "1", "1", 8, 4, 0, "2022-01-04"),
+    Comment("887d46cb-1d43-4326-9e05-26a79500e24e", "Language quotas are institutional nepotism.", "1", "1", 9, 5, 0, "2022-01-05"),
+    Comment("887d46cb-1d43-4326-9e05-26a79500e24f", "These things should not be compared with each other", "1", "1", 6, 2, 0, "2022-01-06"),
+    Comment("887d46cb-1d43-4326-9e05-26a79500e24g", "Schools should have teaching peace, i.e. less extra work for teachers.", "1", "1", 7, 3, 0, "2022-01-07"),
+    Comment("887d46cb-1d43-4326-9e05-26a79500e24h", "The educational material of schools should be implemented on the principle of open source code.", "1", "1", 8, 4, 0, "2022-01-08"),
+    Comment("887d46cb-1d43-4326-9e05-26a79500e24j", "Basic income support should be replaced by basic income.", "1", "1", 9, 5, 0, "2022-01-09"),
 ]
 
 clusterComments(comments)

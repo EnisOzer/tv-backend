@@ -2,8 +2,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import Union
 from fastapi import FastAPI, Header, Request
 from src.handlers.comment_handler import create_comment_handler, get_pending_comments_handler
-from src.handlers.request_models import CommentRequest, TopicRequest
-from src.handlers.topic_handler import create_topic_handler, get_topic_handler, get_topic_comments_handler
+from src.handlers.request_models import CommentRequest, SessionIdsActivityRequest, SessionIdsTopicsRequest, TopicRequest, VoteRequest
+from src.handlers.session_activity_handler import get_session_ids_activity_handler, get_session_ids_topics_handler, vote_handler
+from src.handlers.topic_handler import create_topic_handler, get_all_topic_handler, get_topic_handler, get_topic_comments_handler
 
 app = FastAPI()
 
@@ -29,6 +30,10 @@ app.add_middleware(
 def create_topic(request: TopicRequest, authorization: Union[str, None] = Header(default=None)):
     return create_topic_handler(request, authorization)
 
+@app.get("/topic")
+def get_all_topics():
+    return get_all_topic_handler()
+
 @app.post("/comment")
 def create_comment(request: CommentRequest):
     return create_comment_handler(request)
@@ -46,3 +51,15 @@ def get_topic_comments(topic_id: str):
 @app.get("/topic/{topic_id}/pending_comments")
 def get_pending_comments(topic_id: str, request: Request):
     return get_pending_comments_handler(topic_id, request)
+
+@app.get("/get_session_ids_topics")
+def get_session_ids_topics(request: SessionIdsTopicsRequest):
+    return get_session_ids_topics_handler(request)
+
+@app.get("/get_session_ids_activity")
+def get_session_ids_activity(request: SessionIdsActivityRequest):
+    return get_session_ids_activity_handler(request)
+
+@app.put("/vote")
+def vote(request: VoteRequest):
+    return vote_handler(request)
