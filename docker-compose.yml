@@ -10,7 +10,7 @@ services:
     image:
       backend:latest
     environment:
-      - OPENAI_API_KEY=
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
   postgres:
     container_name: postgres
     image: postgres
