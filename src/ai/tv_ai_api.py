@@ -105,6 +105,9 @@ def _optimal_k_silhouette(tfidf_matrix, max_k=10):
         score = silhouette_score(tfidf_matrix, labels)
         silhouette_scores.append((k, score))
 
+    if len(silhouette_scores) == 0:
+        return 1
+
     # Find the k with the highest silhouette score
     k_opt, _ = max(silhouette_scores, key=lambda x: x[1])
     return k_opt
