@@ -1,7 +1,8 @@
 import logging
 from fastapi import HTTPException
 from src.handlers.database_connection import get_db_connection
-from src.handlers.request_models import ActivityTopicResponse, SessionIdsActivityRequest, SessionIdsTopicsRequest, VoteRequest
+from src.handlers.request_models import SessionIdsActivityRequest, SessionIdsTopicsRequest, VoteRequest
+from src.handlers.response_models import ActivityTopicResponse
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ def get_session_ids_topics_handler(request: SessionIdsTopicsRequest):
 
     return {"topics": topic_ids}
 
-def get_session_ids_activity_handler(request: SessionIdsActivityRequest):
+def get_session_ids_activity_handler(request: SessionIdsActivityRequest) -> ActivityTopicResponse:
     session_id, topic_id = request.session_id, request.topic_id
 
     if not session_id or not topic_id:
@@ -44,6 +45,10 @@ def get_session_ids_activity_handler(request: SessionIdsActivityRequest):
                 (topic_id,)
             )
             comments = cursor.fetchall()
+            if not comments:
+                logger.error("No activity in session id %s for topic %s", session_id, topic_id)
+                raise HTTPException(status_code=404, detail=f"No activity in session id {session_id} for topic {topic_id}")
+            
             comment_ids_all = [row[0] for row in comments]
 
             # Fetch user votes for the comments related to the topic
@@ -70,17 +75,26 @@ def get_session_ids_activity_handler(request: SessionIdsActivityRequest):
         commentIDsSkipped=comment_ids_skipped,
     )
 
-def vote_handler(request: VoteRequest):
+def vote_handler(request: VoteRequest) -> ActivityTopicResponse:
     comment_id, session_id, vote_type = request.comment_id, request.session_id, request.vote_type
     logger.info("Session id %s is voting for commentId %s with vote type %s.", session_id, comment_id, vote_type)
+    
     with get_db_connection() as connection:
         with connection.cursor() as cursor:
             # Check if the comment exists
             cursor.execute(
-                "SELECT id FROM comment WHERE id = %s",
+                "SELECT id, topic_id FROM comment WHERE id = %s",
                 (comment_id,)
             )
-            comment = cursor.fetchone()
+            result = cursor.fetchone()
+
+            if not result:
+                logger.error("Comment with id %s is not found", comment_id)
+                raise HTTPException(status_code=404, detail="Comment not found.")
+            
+            comment = result[0]
+            topic_id = result[1]
+
             if not comment:
                 logger.error("Comment with id %s is not found", comment_id)
                 raise HTTPException(status_code=404, detail="Comment not found.")
@@ -105,4 +119,4 @@ def vote_handler(request: VoteRequest):
                 )
             connection.commit()
 
-    return {}
+    return get_session_ids_activity_handler(SessionIdsActivityRequest(session_id=session_id, topic_id=topic_id))
