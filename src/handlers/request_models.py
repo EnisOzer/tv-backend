@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import List
 from pydantic import BaseModel
 from dataclasses import dataclass
@@ -21,10 +22,15 @@ class SessionIdsActivityRequest(BaseModel):
     session_id: str
     topic_id: str
 
+class VoteType(str, Enum):
+    VOTE_UP = "VOTE_UP"
+    VOTE_DOWN = "VOTE_DOWN"
+    SKIPPED = "SKIPPED"
+    
 class VoteRequest(BaseModel):
     comment_id: str
     session_id: str
-    vote_type: str
+    vote_type: VoteType
     
 class ActivityTopicResponse(BaseModel):
     session_id: str
