@@ -14,6 +14,7 @@ origins = [
     "http://localhost",  # Allow requests from localhost
     "http://localhost:8000",
     "https://example.com",  # Add your specific domains
+    "https://truevoice.web.app",
     "*",  # WARNING: Allowing all origins - use carefully
 ]
 
