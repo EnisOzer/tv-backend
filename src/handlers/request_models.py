@@ -3,14 +3,14 @@ from dataclasses import dataclass
 
 @dataclass
 class TopicRequest(BaseModel):
-    name: str
+    title: str
     description: str
 
 @dataclass
 class CommentRequest(BaseModel):
     topic_id: str
     content: str
-    creator_id: str
+    session_id: str
 
 @dataclass
 class TopicResponse(BaseModel):
