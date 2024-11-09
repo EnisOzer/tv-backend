@@ -2,11 +2,13 @@ services:
   tv-backend:
     build: .
     ports:
-      - "8080:8080"
+      - "80:80"
     depends_on:
       - "postgres"
     networks:
       - "tv-backend-net"
+    image:
+      backend:latest
 
   postgres:
     container_name: postgres
