@@ -6,7 +6,8 @@ from handlers.request_models import TopicRequest
 TOPIC_MIN_LEN_NAME = 7
 
 def create_topic_handler(request: TopicRequest):
-    topic_name = request.topic_name
+    topic_name, topic_description = request.name, request.description
+    
 
     if not topic_name or (len(topic_name) < TOPIC_MIN_LEN_NAME):
         raise HTTPException(status_code=400, detail= f"Topic name should have minimum {TOPIC_MIN_LEN_NAME} characters.")
@@ -19,7 +20,9 @@ def create_topic_handler(request: TopicRequest):
             if existing_topic:
                 raise HTTPException(status_code=400, detail="Topic already exists.")
             
-            cursor.execute("INSERT INTO topics (topic_name) VALUES (%s) RETURNING topic_id", (topic_name,))
+            cursor.execute(
+                "INSERT INTO topics (name, description) VALUES (%s, %s) RETURNING topic_id",
+                (topic_name, topic_description, ))
             topic_id = cursor.fetchone()[0]
             
             connection.commit()

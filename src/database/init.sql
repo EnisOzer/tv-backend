@@ -18,9 +18,10 @@ CREATE TABLE truevoice.moderator (
 
 -- Create Topic table
 CREATE TABLE truevoice.topic (
-    topic_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- Unique identifier for topic
-    topic_name VARCHAR(255) NOT NULL,                     -- Topic name with a max length of 255 characters
-    created_at TIMESTAMP WITH TIME ZONE,                  -- Exact timestamp when topic was created
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),      -- Unique identifier for topic
+    name VARCHAR(255) NOT NULL,                         -- Topic name with a max length of 255 characters
+    description TEXT,                                   -- Description of topic
+    created_at TIMESTAMP WITH TIME ZONE,                -- Exact timestamp when topic was created
     moderator_username VARCHAR(255) REFERENCES truevoice.moderator(username) -- Moderator username who created this topic
 );
 
