@@ -114,6 +114,9 @@ def _optimal_k_silhouette(tfidf_matrix, max_k=10):
     return k_opt
 
 def clusterComments(comments: list[Comment]):
+    if len(comments) == 0:
+        return []
+
     # Step 1: Convert comments to TF-IDF vectors
     vectorizer = TfidfVectorizer(stop_words='english')  # 'english' stop words to ignore common words
     # extract the comment portion of each Comment
