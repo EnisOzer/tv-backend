@@ -4,6 +4,8 @@ from openai import OpenAI
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
+from sentence_transformers import SentenceTransformer, util
+from sklearn.cluster import AgglomerativeClustering
 
 client = OpenAI(api_key="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")
 
@@ -114,6 +116,30 @@ def _optimal_k_silhouette(tfidf_matrix, max_k=10):
     return k_opt
 
 def clusterComments(comments: list[Comment]):
+    if not len(comments):
+        return []
+    
+    model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+
+    embeddings = model.encode([comment.content for comment in comments])
+
+    # Set up Agglomerative Clustering with a similarity threshold
+    # The distance_threshold parameter is used to define the max distance between sentences in a cluster
+    clustering_model = AgglomerativeClustering(n_clusters=None, metric='cosine', linkage='average', distance_threshold=0.5)
+    clustering_model.fit(embeddings)
+
+    # Assign sentences to clusters
+    cluster_assignment = clustering_model.labels_
+
+    # Organize sentences into clusters
+    clusters = {}
+    for comment, cluster_id in zip(comments, cluster_assignment):
+        if cluster_id not in clusters:
+            clusters[cluster_id] = []
+        clusters[cluster_id].append(comment)
+
+    return [cluster for cluster in clusters.values()]
+
     # Step 1: Convert comments to TF-IDF vectors
     vectorizer = TfidfVectorizer(stop_words='english')  # 'english' stop words to ignore common words
     # extract the comment portion of each Comment

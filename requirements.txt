@@ -2,3 +2,5 @@ fastapi[standard]
 psycopg2
 scikit-learn
 openai
+firebase_admin
+sentence-transformers
