@@ -55,10 +55,11 @@ def checkHatefulComment(comment: str):
 class Comment:
     def __init__(self, comment_id: str, comment: str, topic_id: str, session_id: str, up_votes: int, down_votes: int, skipped_times: int, timestamp: str):
         self.comment_id = comment_id
-        self.comment = comment
+        self.content = comment
         self.up_votes = up_votes
         self.down_votes = down_votes
-        self.timestamp = timestamp
+        self.skipped_times = skipped_times
+        self.created_at = timestamp
         self.topic_id = topic_id
         self.session_id = session_id
 
@@ -71,18 +72,18 @@ def _getTopComments(comments: list[Comment]):
     votesComments = sorted(comments, key=lambda x: x.up_votes + x.down_votes, reverse=True)
     
     # sort comments based on recency
-    dateSortedComments = sorted(comments, key=lambda x: x.timestamp, reverse=True)
+    dateSortedComments = sorted(comments, key=lambda x: x.created_at, reverse=True)
     
     # while the answer size is less than the sample size, keep adding comments (by taking the next top comment from each list)
     comments = []
     i = 0
     while len(comments) < sampleSize:
         if i < len(votesComments):
-            comments.append(upvotesComments[i].comment)
+            comments.append(upvotesComments[i].content)
         if i < len(votesComments) and len(comments) < sampleSize:
-            comments.append(votesComments[i].comment)
+            comments.append(votesComments[i].content)
         if i < len(dateSortedComments) and len(comments) < sampleSize:
-            comments.append(dateSortedComments[i].comment)
+            comments.append(dateSortedComments[i].content)
         i += 1
 
     return comments
@@ -116,7 +117,7 @@ def clusterComments(comments: list[Comment]):
     # Step 1: Convert comments to TF-IDF vectors
     vectorizer = TfidfVectorizer(stop_words='english')  # 'english' stop words to ignore common words
     # extract the comment portion of each Comment
-    tfidf_matrix = vectorizer.fit_transform([comment.comment for comment in comments])
+    tfidf_matrix = vectorizer.fit_transform([comment.content for comment in comments])
 
     # Step 2: Define the number of clusters (k) - adjust based on data
     k = _optimal_k_silhouette(tfidf_matrix)

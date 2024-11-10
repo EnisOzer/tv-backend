@@ -184,7 +184,7 @@ def get_topic_comments_handler(topic_id: str) -> CommentResponse:
                     created_at=comment[4],
                     up_votes=comment[5],
                     down_votes=comment[6],
-                    skipped_votes=comment[7]
+                    skipped_times=comment[7]
                 )
                 for comment in comments
             ]
