@@ -42,7 +42,7 @@ def create_topic(topic_id: str, request: TopicRequest, authorization: str = Head
 def get_all_topics() -> List[TopicResponse]:
     return get_all_topic_handler()
 
-@app.post("/comment")
+@app.post("/add_comment")
 def create_comment(request: CommentRequest) -> CommentResponse:
     return create_comment_handler(request)
 
