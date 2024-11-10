@@ -5,7 +5,7 @@ from fastapi import FastAPI, Header, Request
 from src.ai.tv_ai_api import Comment
 from src.handlers.response_models import ActivityTopicResponse, CommentResponse, TopicResponse
 from src.handlers.comment_handler import approve_comment_handler, create_comment_handler, get_pending_comments_handler, reject_comment_handler
-from src.handlers.request_models import CommentRequest, SessionIdsActivityRequest, TopicRequest, VoteRequest
+from src.handlers.request_models import CommentRequest, TopicRequest, VoteRequest
 from src.handlers.session_activity_handler import get_session_ids_activity_handler, get_session_ids_topics_handler, vote_handler
 from src.handlers.topic_handler import create_topic_handler, edit_topic_handler, get_all_topic_handler, get_topic_comments_summary_handler, get_topic_handler, get_topic_comments_handler
 
