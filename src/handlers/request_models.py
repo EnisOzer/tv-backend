@@ -1,6 +1,5 @@
 import datetime
 from enum import Enum
-from typing import List, Optional
 from pydantic import BaseModel
 from dataclasses import dataclass
 
@@ -13,10 +12,6 @@ class TopicRequest(BaseModel):
 class CommentRequest(BaseModel):
     topic_id: str
     content: str
-    session_id: str
-
-@dataclass
-class SessionIdsTopicsRequest(BaseModel):
     session_id: str
 
 class SessionIdsActivityRequest(BaseModel):
