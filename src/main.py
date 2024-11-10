@@ -77,7 +77,7 @@ def get_pending_comments(topic_id: str, request: Request):
 def get_session_ids_topics(session_id: str):
     return get_session_ids_topics_handler(session_id)
 
-@app.get("/get_session_ids_activity")
+@app.get("/session/{session_id}/topics/{topic_id}")
 def get_session_ids_activity(session_id: str, topic_id: str) -> ActivityTopicResponse:
     return get_session_ids_activity_handler(session_id, topic_id)
 
