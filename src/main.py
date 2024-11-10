@@ -1,8 +1,10 @@
 from typing import List
 from fastapi.middleware.cors import CORSMiddleware
+import firebase_admin
 from typing import Union
 from fastapi import FastAPI, Header, Request
 from src.ai.tv_ai_api import Comment
+from src.handlers.firebase_api_validation_middleware import FirebaseValidationMiddleware
 from src.handlers.response_models import ActivityTopicResponse, CommentResponse, TopicResponse
 from src.handlers.comment_handler import approve_comment_handler, create_comment_handler, get_pending_comments_handler, reject_comment_handler
 from src.handlers.request_models import CommentRequest, TopicRequest, VoteRequest
@@ -11,6 +13,8 @@ from src.handlers.topic_handler import create_topic_handler, edit_topic_handler,
 
 app = FastAPI()
 
+
+firebase_app = firebase_admin.initialize_app()
 
 # Specify allowed origins
 origins = [
@@ -28,6 +32,10 @@ app.add_middleware(
     allow_credentials=True,  # Allow cookies or other credentials to be sent
     allow_methods=["*"],     # Allow all HTTP methods (e.g., GET, POST)
     allow_headers=["*"],     # Allow all headers
+)
+
+app.add_middleware(
+    FirebaseValidationMiddleware
 )
 
 @app.post("/topic")
