@@ -73,7 +73,7 @@ def get_topic_comments_summary(topic_id: str):
 def get_pending_comments(topic_id: str, request: Request):
     return get_pending_comments_handler(topic_id, request)
 
-@app.get("/get_session_ids_topics/{session_id}")
+@app.get("/session/{session_id}")
 def get_session_ids_topics(session_id: str):
     return get_session_ids_topics_handler(session_id)
 
