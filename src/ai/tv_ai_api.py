@@ -4,8 +4,10 @@ from openai import OpenAI
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
+import os
 
-client = OpenAI(api_key="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")
+api_key = os.getenv("OPENAI_API_KEY", "")
+client = OpenAI(api_key=api_key)
 
 def askAi(question):
     response = client.chat.completions.create(
