@@ -70,7 +70,7 @@ def get_topic_comments_summary(topic_id: str):
 
 # Moderator endpoint to get unapproved comments
 @app.get("/topic/{topic_id}/pending_comments")
-def get_pending_comments(topic_id: str, request: Request) -> List[List[Comment]]:
+def get_pending_comments(topic_id: str, request: Request):
     return get_pending_comments_handler(topic_id, request)
 
 @app.get("/get_session_ids_topics")
