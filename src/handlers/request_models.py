@@ -1,6 +1,5 @@
 import datetime
 from enum import Enum
-from typing import List, Optional
 from pydantic import BaseModel
 from dataclasses import dataclass
 
@@ -15,13 +14,6 @@ class CommentRequest(BaseModel):
     content: str
     session_id: str
 
-@dataclass
-class SessionIdsTopicsRequest(BaseModel):
-    session_id: str
-
-class SessionIdsActivityRequest(BaseModel):
-    session_id: str
-    topic_id: str
 @dataclass
 class VoteType(str, Enum):
     VOTE_UP = "VOTE_UP"

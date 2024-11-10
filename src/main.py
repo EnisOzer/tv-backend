@@ -5,7 +5,7 @@ from fastapi import FastAPI, Header, Request
 from src.ai.tv_ai_api import Comment
 from src.handlers.response_models import ActivityTopicResponse, CommentResponse, TopicResponse
 from src.handlers.comment_handler import approve_comment_handler, create_comment_handler, get_pending_comments_handler, reject_comment_handler
-from src.handlers.request_models import CommentRequest, SessionIdsActivityRequest, SessionIdsTopicsRequest, TopicRequest, VoteRequest
+from src.handlers.request_models import CommentRequest, TopicRequest, VoteRequest
 from src.handlers.session_activity_handler import get_session_ids_activity_handler, get_session_ids_topics_handler, vote_handler
 from src.handlers.topic_handler import create_topic_handler, edit_topic_handler, get_all_topic_handler, get_topic_comments_summary_handler, get_topic_handler, get_topic_comments_handler
 
@@ -31,11 +31,11 @@ app.add_middleware(
 )
 
 @app.post("/topic")
-def create_topic(request: TopicRequest, authorization: Union[str, None] = Header(default=None)) -> TopicResponse:
+def create_topic(request: TopicRequest, authorization: str = Header(default=None)) -> TopicResponse:
     return create_topic_handler(request, authorization)
 
 @app.put("/topic/{topic_id}")
-def create_topic(topic_id: str, request: TopicRequest, authorization: Union[str, None] = Header(default=None)) -> TopicResponse:
+def create_topic(topic_id: str, request: TopicRequest, authorization: str = Header(default=None)) -> TopicResponse:
     return edit_topic_handler(topic_id, request, authorization)
 
 @app.get("/topic")
@@ -73,13 +73,13 @@ def get_topic_comments_summary(topic_id: str):
 def get_pending_comments(topic_id: str, request: Request):
     return get_pending_comments_handler(topic_id, request)
 
-@app.get("/get_session_ids_topics")
-def get_session_ids_topics(request: SessionIdsTopicsRequest):
-    return get_session_ids_topics_handler(request)
+@app.get("/session/{session_id}")
+def get_session_ids_topics(session_id: str):
+    return get_session_ids_topics_handler(session_id)
 
-@app.get("/get_session_ids_activity")
-def get_session_ids_activity(request: SessionIdsActivityRequest) -> ActivityTopicResponse:
-    return get_session_ids_activity_handler(request)
+@app.get("/session/{session_id}/topics/{topic_id}")
+def get_session_ids_activity(session_id: str, topic_id: str) -> ActivityTopicResponse:
+    return get_session_ids_activity_handler(session_id, topic_id)
 
 @app.put("/vote")
 def vote(request: VoteRequest) -> ActivityTopicResponse:
