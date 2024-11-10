@@ -107,4 +107,4 @@ def vote_handler(request: VoteRequest) -> ActivityTopicResponse:
                 )
             connection.commit()
 
-    return get_session_ids_activity_handler(SessionIdsActivityRequest(session_id=session_id, topic_id=topic_id))
+    return get_session_ids_activity_handler(session_id, topic_id)
